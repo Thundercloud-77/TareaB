@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './App.css';
 import logo from './foto.png';
 import { useForm, Controller } from 'react-hook-form';
+import axios from 'axios';
 
 function FormularioTicketTurno1() {
   const {
@@ -10,8 +11,26 @@ function FormularioTicketTurno1() {
     formState: { errors },
   } = useForm();
 
-  const onSubmit = (data) => {
-    console.log(data); 
+  const [message, setMessage]=useState('');
+  const[error, setError]= useState('');
+
+  const onSubmit = async (data) => {
+    try{
+      const response = await axios.get(`http://localhost:3001/tickets?curp=${data.curp}`);
+      if(response.data.lenght>0){
+        setError('Ya existe un ticket con la misma CURP. No se ha insertado el ticket');
+        setMessage('');
+      } else{
+        const insertResponse=await axios.post('http://localhost:3001/tickets',data);
+        setMessage('Los datos se han insertado correctamente.');
+        setError('');
+        console.log(insertResponse.data)
+      }
+    }catch(error){
+      console.error('Error al crear un ticket:',error);
+      setError('Hubo un error al insertar los datos.');
+      setMessage('');
+    }
   };
 
   return (
